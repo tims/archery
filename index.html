@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>AA Rating Calculator</title>
+</head>
+<body>
+
+<h1>Calculate Rating</h1>
+
+<label for="distance">Distance (m):</label><br>
+<input type="number" id="distance" name="distance" oninput="updateTable()"><br><br>
+
+<label for="face">Face (mm):</label><br>
+<input type="number" id="face" name="face" oninput="updateTable()""><br><br>
+
+<label for="numArrows">Number of arrows:</label><br>
+<input type="number" id="numArrows" name="numArrows" oninput="updateTable()"><br><br>
+
+<label for="score">Score (optional):</label><br>
+<input type="number" id="score" name="score" oninput="updateRating()"><br><br>
+
+<label for="rating">Rating (optional):</label><br>
+<input type="number" id="rating" name="rating" oninput="updateScore()"><br><br>
+
+
+<p id="result"></p>
+
+<table id="ratingTable">
+    <tr>
+      <th>Rating</th>
+      <th>Score</th>
+    </tr>
+  </table>
+
+<script>
+// Java script class
+class AARating {
+  constructor() {
+    this.A = 0.027
+    this.B = 2.37 // constant determining range of index numbers
+    this.C = 0.004 // constant determining the excess effect of distance
+    this.E = 3.5 // the avg radius of the arrow in mm
+    this.N = 10 // is the number of scoring rings
+  }
+ 
+  W(D, I) {
+    // W = deviation from center.
+    // D = distance in meters.
+    // I = handicap index - this is the rating.
+    return D * Math.exp(-this.A * I + this.B + this.C * D)
+  }
+
+  R(i, face_size) {
+    if (i < 1 || i > this.N) {
+      throw Exception("ring out of bounds")
+    }
+    // the radius of the ring i on the target in mm
+    // the 10 ring for a 1220mm face is 61mm
+    return (face_size / this.N) * i / 2
+  }
+
+  V(i) {
+    // we assume number of rings = number of points
+    if (i < 1 || i > this.N) {
+      throw Exception("ring out of bounds")
+    }
+    return this.N - i + 1
+  } 
+
+  F(i, D, I, face_size) {
+    // i = target face ring
+    // D = distance in meters.
+    // I = handicap index - this is the rating.
+    // face_size = target face size in mm
+    if (i == 0) {
+      return 1
+    }
+    if (i < 1 || i > this.N) {
+      throw Exception("ring out of bounds")
+    }
+    var Ri = this.R(i, face_size)
+    var w = this.W(D,I)
+    return Math.exp(-Math.pow((Ri+this.E)/w,2)/2)
+  }
+
+  EXPECTED_SCORE(D, I, face_size) {
+    let score = 0
+    for (var i = 1; i <= this.N; i++) {
+      score += (this.F(i-1, D, I, face_size) - this.F(i, D, I, face_size)) * this.V(i)
+    }
+    return score
+  }
+}
+
+function AA_SCORE(distance, face_size, num_arrows, rating) {
+  return Math.round(new AARating().EXPECTED_SCORE(distance, rating, face_size) * num_arrows)
+}
+
+function AA_RATING(distance, face_size, num_arrows, score) {
+  var maxRating = 0
+  for (var i = 1; i <= 100; i++) {
+    var iScore = Math.round(new AARating().EXPECTED_SCORE(distance, i, face_size) * num_arrows)
+    if (iScore > score) { 
+      return maxRating
+    }
+    else {
+      maxRating = i
+    }
+  }
+  return maxRating
+}
+
+
+function updateRating() {
+  var distance = parseFloat(document.getElementById("distance").value);
+  var face = parseFloat(document.getElementById("face").value);
+  var numArrows = parseFloat(document.getElementById("numArrows").value);
+  var score = parseFloat(document.getElementById("score").value);
+  var rating = AA_RATING(distance, face, numArrows, score)
+  document.getElementById("rating").value = rating
+}
+
+function updateScore() {
+  var distance = parseFloat(document.getElementById("distance").value);
+  var face = parseFloat(document.getElementById("face").value);
+  var numArrows = parseFloat(document.getElementById("numArrows").value);
+  var rating = parseFloat(document.getElementById("rating").value);
+  var score = AA_SCORE(distance, face, numArrows, rating)
+  document.getElementById("score").value = score
+}
+
+function updateTable() {
+  var distance = parseFloat(document.getElementById("distance").value);
+  var face = parseFloat(document.getElementById("face").value);
+  var numArrows = parseFloat(document.getElementById("numArrows").value);
+  let table = document.getElementById("ratingTable");
+  table.innerHTML = "<tr><th>Rating</th><th>Score</th></tr>"; // Clear existing table rows
+  for (let i = 0; i <= 100; i += 5) {
+    let row = table.insertRow();
+    let cell1 = row.insertCell(0);
+    let cell2 = row.insertCell(1);
+    cell1.innerHTML = i;
+    cell2.innerHTML = AA_SCORE(distance, face, numArrows, i)
+  }
+}
+
+function generateTable(distance, face, numArrows) {
+    
+}
+</script>
+
+</body>
+</html>
