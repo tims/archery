@@ -1,76 +1,152 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>AA Rating Calculator</title>
+  <title>AA Rating Calculator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
+    integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css" />
+  <style>
+    .center {
+      justify-content: center;
+    }
+
+    .main {
+      margin: 1em
+    }
+  </style>
 </head>
+
 <body>
+  <div class="main">
+    <h1>AA Rating Calculator</h1>
+    <form class="pure-form pure-form-aligned"
+      onSubmit="try { submitForm() } catch(err) { console.error(err) }; return false;">
+      <fieldset>
+        <div class="pure-control-group">
+          <label for="distance">Distance (m)</label>
+          <select id="distance" required>
+            <option>20</option>
+            <option>30</option>
+            <option>40</option>
+            <option>50</option>
+            <option>60</option>
+            <option>70</option>
+            <option>90</option>
+          </select>
+        </div>
+        <div class="pure-control-group">
+          <label for="face">Face (mm)</label>
+          <select id="face" required>
+            <option value="1220">1220mm</option>
+            <option value="800">800mm</option>
+            <option value="400">400mm</option>
+          </select>
+        </div>
+        <div class="pure-control-group">
+          <label for="numArrows">Number of arrows</label>
+          <input type="number" id="numArrows" name="numArrows" required>
+        </div>
 
-<h1>Calculate Rating</h1>
+        <div class="pure-control-group">
+          <label for="score">Score</label>
+          <input type="number" id="score" name="score" required>
+        </div>
+        <div class="pure-controls">
+          <button type="submit" class="pure-button pure-button-primary">Add</button>
+        </div>
+      </fieldset>
+    </form>
 
-<label for="distance">Distance (m):</label><br>
-<input type="number" id="distance" name="distance" oninput="updateTable()"><br><br>
+    <table class="pure-table pure-table-bordered">
+      <thead>
+        <tr>
+          <th>Distance (m)</th>
+          <th>Face (mm)</th>
+          <th>Number of arrows</th>
+          <th>Score</th>
+          <th>Rating</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">Summary:</td>
+          <td id="numArrowsTotal"></td>
+          <td id="scoreTotal"></td>
+          <td id="ratingTotal"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
-<label for="face">Face (mm):</label><br>
-<input type="number" id="face" name="face" oninput="updateTable()""><br><br>
+  <script src="aa_rating.js"></script>
+  <script>
+    class Entry {
+      constructor(distance, face, numArrows, score, rating) {
+        this.distance = distance;
+        this.face = face;
+        this.numArrows = numArrows;
+        this.score = score;
+        this.rating = rating;
+      }
+    }
+    var entries = [];
 
-<label for="numArrows">Number of arrows:</label><br>
-<input type="number" id="numArrows" name="numArrows" oninput="updateTable()"><br><br>
+    // Java script class
+    function updateRating() {
+      var distance = parseFloat(document.getElementById("distance").value);
+      var face = parseFloat(document.getElementById("face").value);
+      var numArrows = parseFloat(document.getElementById("numArrows").value);
+      var score = parseFloat(document.getElementById("score").value);
+      var rating = AA_RATING(distance, face, numArrows, score);
+      document.getElementById("rating").value = rating;
+    }
 
-<label for="score">Score (optional):</label><br>
-<input type="number" id="score" name="score" oninput="updateRating()"><br><br>
+    function updateScore() {
+      var distance = parseFloat(document.getElementById("distance").value);
+      var face = parseFloat(document.getElementById("face").value);
+      var numArrows = parseFloat(document.getElementById("numArrows").value);
+      var rating = parseFloat(document.getElementById("rating").value);
+      var score = AA_SCORE(distance, face, numArrows, rating);
+      document.getElementById("score").value = score;
+    }
 
-<label for="rating">Rating (optional):</label><br>
-<input type="number" id="rating" name="rating" oninput="updateScore()"><br><br>
+    function submitForm() {
+      var distance = parseFloat(document.getElementById("distance").value);
+      var face = parseFloat(document.getElementById("face").value);
+      var numArrows = parseFloat(document.getElementById("numArrows").value);
+      var score = parseFloat(document.getElementById("score").value);
+      var rating = AA_RATING(distance, face, numArrows, score);
+      let table = document.getElementById("tableBody");
+      entries.push(new Entry(distance, face, numArrows, score, rating));
+      let row = table.insertRow(0);
+      row.insertCell(0).innerHTML = distance;
+      row.insertCell(1).innerHTML = face;
+      row.insertCell(2).innerHTML = numArrows;
+      row.insertCell(3).innerHTML = score;
+      row.insertCell(4).innerHTML = rating;
 
 
-<p id="result"></p>
+      let numArrowsTotal = 0;
+      let scoreTotal = 0;
 
-<table id="ratingTable">
-    <tr>
-      <th>Rating</th>
-      <th>Score</th>
-    </tr>
-  </table>
-<script src="aa_rating.js"></script>
-<script>
-// Java script class
-function updateRating() {
-  var distance = parseFloat(document.getElementById("distance").value);
-  var face = parseFloat(document.getElementById("face").value);
-  var numArrows = parseFloat(document.getElementById("numArrows").value);
-  var score = parseFloat(document.getElementById("score").value);
-  var rating = AA_RATING(distance, face, numArrows, score)
-  document.getElementById("rating").value = rating
-}
-
-function updateScore() {
-  var distance = parseFloat(document.getElementById("distance").value);
-  var face = parseFloat(document.getElementById("face").value);
-  var numArrows = parseFloat(document.getElementById("numArrows").value);
-  var rating = parseFloat(document.getElementById("rating").value);
-  var score = AA_SCORE(distance, face, numArrows, rating)
-  document.getElementById("score").value = score
-}
-
-function updateTable() {
-  var distance = parseFloat(document.getElementById("distance").value);
-  var face = parseFloat(document.getElementById("face").value);
-  var numArrows = parseFloat(document.getElementById("numArrows").value);
-  let table = document.getElementById("ratingTable");
-  table.innerHTML = "<tr><th>Rating</th><th>Score</th></tr>"; // Clear existing table rows
-  for (let i = 0; i <= 100; i += 5) {
-    let row = table.insertRow();
-    let cell1 = row.insertCell(0);
-    let cell2 = row.insertCell(1);
-    cell1.innerHTML = i;
-    cell2.innerHTML = AA_SCORE(distance, face, numArrows, i)
-  }
-}
-
-function generateTable(distance, face, numArrows) {
-    
-}
-</script>
+      let round = new Round()
+      for (let i = 0; i < entries.length; i++) {
+        let entry = entries[i]
+        round.withPart(entry.distance, entry.face, entry.numArrows)
+        numArrowsTotal += entry.numArrows;
+        scoreTotal += entry.score;
+      }
+      let ratingForRound = round.expectedRoundRating(scoreTotal);
+      document.getElementById("numArrowsTotal").innerHTML = numArrowsTotal;
+      document.getElementById("scoreTotal").innerHTML = scoreTotal;
+      document.getElementById("ratingTotal").innerHTML = ratingForRound;
+      return false;
+    }
+  </script>
 
 </body>
+
 </html>
