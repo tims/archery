@@ -2,7 +2,7 @@
 class AARating {
   constructor(A = 0.027, B = 2.37, C = 0.004, E = 3.5, N = 10, D = 50, Face = 1220) {
     this.A = A;
-    this.B = B; // constant determining range of index numbers
+    this.B = B; // A and B are constants determining range of index numbers
     this.C = C; // constant determining the excess effect of distance
     this.D = D; // distance in meters
     this.E = E; // the avg radius of the arrow in mm
@@ -91,20 +91,6 @@ class RoundPart {
   expectedRoundPartScore(rating) {
     return new AARating().withDistance(this.distance).withFaceSize(this.face_size).expectedScore(rating) * this.num_arrows;
   }
-
-  expectedRoundPartRating(score) {
-    var maxRating = 0;
-    for (var i = 1; i <= 120; i++) {
-      var iScore = Math.round(this.expectedRoundPartScore(i));
-      if (iScore >= score) {
-        return maxRating;
-      }
-      else {
-        maxRating = i;
-      }
-    }
-    return maxRating;
-  }
 }
 
 class Round {
@@ -126,17 +112,15 @@ class Round {
   }
 
   expectedRoundRating(score) {
-    var maxRating = 0
-    for (let i = 1; i <= 120; i++) {
-      let iScore = 0;
+    var maxRating = 100
+    for (let i = 1; i <= maxRating; i++) {
+      let expectedScore = 0;
       for (let j = 0; j < this.parts.length; j++) {
-        iScore += this.parts[j].expectedRoundPartScore(i);
+        expectedScore += this.parts[j].expectedRoundPartScore(i)
       }
-      if (iScore >= score) {
-        return maxRating;
-      }
-      else {
-        maxRating = i;
+      expectedScore = Math.round(expectedScore)
+      if (expectedScore >= score) {
+        return i;
       }
     }
     return maxRating;

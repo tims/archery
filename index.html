@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>AA Rating Calculator</title>
+  <title>Archery Australia Rating Calculator</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
     integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/grids-responsive-min.css" />
@@ -11,77 +11,118 @@
       justify-content: center;
     }
 
+    .bordered-panel {
+      border: 1px solid;
+      padding: 1em;
+    }
+
     .main {
-      margin: 1em
+      margin: 1em;
     }
   </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="aa_rating.js"></script>
 </head>
 
 <body>
   <div class="main">
-    <h1>AA Rating Calculator</h1>
-    <form class="pure-form pure-form-aligned"
-      onSubmit="try { submitForm() } catch(err) { console.error(err) }; return false;">
-      <fieldset>
-        <div class="pure-control-group">
-          <label for="distance">Distance (m)</label>
-          <select id="distance" required>
-            <option>20</option>
-            <option>30</option>
-            <option>40</option>
-            <option>50</option>
-            <option>60</option>
-            <option>70</option>
-            <option>90</option>
-          </select>
-        </div>
-        <div class="pure-control-group">
-          <label for="face">Face (mm)</label>
-          <select id="face" required>
-            <option value="1220">1220mm</option>
-            <option value="800">800mm</option>
-            <option value="400">400mm</option>
-          </select>
-        </div>
-        <div class="pure-control-group">
-          <label for="numArrows">Number of arrows</label>
-          <input type="number" id="numArrows" name="numArrows" required>
-        </div>
+    <div class="pure-g">
+      <div class="pure-u-1-24 pure-u-lg-6-24"></div>
+      <div class="pure-u-22-24 pure-u-lg-12-24">
+        <h1>Archery Australia Rating Calculator</h1>
+        <form class="pure-form pure-form-aligned"
+          onSubmit="try { submitForm() } catch(err) { console.error(err) }; return false;">
+          <fieldset>
+            <div class="pure-control-group">
+              <label for="distance">Distance (m)</label>
+              <select id="distance" required>
+                <option>20</option>
+                <option>30</option>
+                <option>40</option>
+                <option>50</option>
+                <option>60</option>
+                <option>70</option>
+                <option>90</option>
+              </select>
+            </div>
+            <div class="pure-control-group">
+              <label for="face">Face (mm)</label>
+              <select id="face" required>
+                <option value="1220">1220mm</option>
+                <option value="800">800mm</option>
+                <option value="400">400mm</option>
+              </select>
+            </div>
+            <div class="pure-control-group">
+              <label for="numArrows">Number of arrows</label>
+              <input type="number" id="numArrows" name="numArrows" required>
+            </div>
 
-        <div class="pure-control-group">
-          <label for="score">Score</label>
-          <input type="number" id="score" name="score" required>
+            <div class="pure-control-group">
+              <label for="score">Score</label>
+              <input type="number" id="score" name="score" required>
+            </div>
+            <div class="pure-controls">
+              <button type="submit" class="pure-button pure-button-primary">Add</button>
+            </div>
+          </fieldset>
+        </form>
+        <table class="pure-table pure-table-bordered" width="100%">
+          <thead>
+            <tr>
+              <th>Distance (m)</th>
+              <th>Face (mm)</th>
+              <th>Number of arrows</th>
+              <th>Score</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="2">Summary:</td>
+              <td id="numArrowsTotal"></td>
+              <td id="scoreTotal"></td>
+              <td id="ratingTotal"></td>
+            </tr>
+          </tfoot>
+        </table>
+        <hr>
+        <div>
+          <h2>Formula from old Archery Australia rule book</h2>
+          <h3>Appendix: 1. Handicap and classification tables derivation</h3>
+          <p>Handicap index tables for Target and Field rounds are determined by the following algorithm:</p>
+          <p>\[W = D.e^{-A.I+B+C.D}\]</p>
+          <p>where</p>
+          <p>\(W\) is archery's deviation from target center in mm</p>
+          <p>\(D\) is target distance in meters</p>
+          <p>\(I\) is archery's handicap index</p>
+          <p>\(A = 0.027\) and \(B = 2.37\) are constants determining the range of index numbers</p>
+          <p>\(C = 0.004\) is a constant detemermining the excess effect of distance</p>
+          <p>Using the above expression for deviation the expected score for each arrow is determined from the
+            relationship:
+          </p>
+          <p>\[S = \sum_{i=1}^{n} (F_{i-1} - F_{i}).V_{i}\]</p>
+          <p>where</p>
+          <p>\(n\) is the number of target scoring rings</p>
+          <p>\(F_0 = 1\) and \[F_{i} = e^{-\frac{(R_i+E)^2}{2.W^2}}\]</p>
+          <p>\(V_i\) is the scoring valuer of ring \(i\) on the target. Note: \(V_i = n - i + 1\), for so the 1st ring is the 10 </p>
+          <p>\(R_i\) is the radius of ring \(i\) on the target in mm. Note: \(R_i = \frac{i . ⌀}{2.n} \) where \(⌀\) is the diameter of the target face in mm</p>
+          <p>\(E = 3.5\) is the average radious of an arrow in mm</p>
+          <p>The round score corresponding to index \(I\) is found by correcting the sum of the expected scores for each
+            arrow to the nearest whole number.</p>
         </div>
-        <div class="pure-controls">
-          <button type="submit" class="pure-button pure-button-primary">Add</button>
+        <div class="bordered-panel">
+          <div>Source image:</div>
+          <image src="aa_rule_book.png" alt="Handicap and classification tables derivation" width="90%" />
         </div>
-      </fieldset>
-    </form>
-
-    <table class="pure-table pure-table-bordered">
-      <thead>
-        <tr>
-          <th>Distance (m)</th>
-          <th>Face (mm)</th>
-          <th>Number of arrows</th>
-          <th>Score</th>
-          <th>Rating</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody">
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="2">Summary:</td>
-          <td id="numArrowsTotal"></td>
-          <td id="scoreTotal"></td>
-          <td id="ratingTotal"></td>
-        </tr>
-      </tfoot>
-    </table>
+      </div>
+      <div class="pure-u-1-24 pure-u-lg-6-24"></div>
+    </div>
   </div>
 
-  <script src="aa_rating.js"></script>
   <script>
     class Entry {
       constructor(distance, face, numArrows, score, rating) {
