@@ -112,7 +112,7 @@ class Round {
   }
 
   expectedRoundRating(score) {
-    var maxRating = 100
+    var maxRating = 150
     for (let i = 1; i <= maxRating; i++) {
       let expectedScore = 0;
       for (let j = 0; j < this.parts.length; j++) {
